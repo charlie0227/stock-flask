@@ -1,0 +1,50 @@
+version: '3'
+services:
+  app:
+    image: oceanize/flask_app:latest
+    container_name: ${APP_NAME}
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DB_HOST: db
+      DB_NAME: ${MYSQL_DATABASE}
+      DB_USER: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - ./app:/app
+    links:
+      - db
+    depends_on:
+      - db
+    ports:
+      - "5000:5000"
+    stdin_open: true   # Add this line into your service
+    tty: true   # Add this line into your service
+  db:
+    container_name: flask-mariadb
+    image: mariadb:latest
+    restart: always
+    volumes:
+      - ./data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    command: ['mysqld', '--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
+    
+  phpmyadmin:
+    depends_on:
+      - db
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: flask-phpmyadmin
+    ports:
+      - "5010:80"
+    links:
+      - db:db
+    environment:
+      MYSQL_USERNAME: root
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      PMA_HOST: db
