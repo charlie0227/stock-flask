@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 from utils.config import Session
+import logging
 
 @contextmanager
 def session_scope():
@@ -17,6 +18,6 @@ def catch_error(func):
         try:
             return func(*args, **kwargs)
         except Exception as e:
-            print(f'{e}')
+            log.exception(e)
             return {'message': f'{e}'}, 500 
     return wrapper
